@@ -107,10 +107,10 @@ let export graph path =
   (* Write in this file. *)
   (*fprintf ff "%% This is a graph in dot format.\n\n" ;*)
 
-  fprintf ff "digraph graph {\n\trankdir = LR; \n\tsize='8,5'\n\tnode[shape =circle];\n";
+  fprintf ff "digraph gr {\n\trankdir = LR; \n\tsize=\"8,5\"\n\tnode[shape =circle];\n";
 
   (* Write all arcs *)
-  e_iter graph (fun id1 id2 lbl -> fprintf ff "\t%d -> %d [label = '%s'];\n" id1 id2 lbl) ;
+  e_iter graph (fun id1 id2 lbl -> fprintf ff "\t%d -> %d [label = \"%s\"];\n" id1 id2 lbl) ;
 
   (*fprintf ff "\n%% End of graph\n" ;*)
   fprintf ff "}";

@@ -1,5 +1,6 @@
 open Gfile
 open Tools
+open Fulkerson
 
 let () =
 
@@ -24,12 +25,14 @@ let () =
   (* Open file *)
   let graph = from_file infile in
 
-  let graph = add_arc (gmap graph (int_of_string)) 3 1 1000 in
-  let graph = gmap graph (string_of_int); 
+  let graph = (gmap graph (int_of_string)) 
+  in
+  let gr = gmap (create_ecart graph) (string_of_int)
+
 
 
   in
   (* Rewrite the graph that has been read. *)
-  let () = write_file outfile graph in
-  export graph "./graphs/format.gv";
+  let () = write_file outfile gr in
+  export gr "./graphs/format.gv";
   ()
