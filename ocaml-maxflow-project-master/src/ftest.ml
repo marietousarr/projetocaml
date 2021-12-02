@@ -23,16 +23,25 @@ let () =
   in
 
   (* Open file *)
-  let graph = from_file infile in
+  let gr = from_file infile in
 
-  let graph = (gmap graph (int_of_string)) 
-  in
-  let gr = gmap (create_ecart graph) (string_of_int)
+  let path1= (find_path gr 0 5)in
+
+  let rec loop p = (match p with 
+      |Some a -> (match a with 
+          |(x,b,c)::rest -> Printf.printf ("%d %d ,") x b; loop (Some rest)
+          |[] -> Printf.printf " fin\n"
+        )
+      |None -> Printf.printf "rien \n"
+    )
 
 
-
-  in
+  (*let graph = (gmap graph (int_of_string)) 
+    in
+    let gr = gmap (create_ecart graph) (string_of_int)
+  *)
   (* Rewrite the graph that has been read. *)
-  let () = write_file outfile gr in
+  in
+  let () =loop path1 ; write_file outfile gr in
   export gr "./graphs/format.gv";
   ()
