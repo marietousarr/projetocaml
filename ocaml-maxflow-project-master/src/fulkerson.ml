@@ -30,15 +30,15 @@ and find_path gr id1 id2 =
 
 let rec find_min gr pat acu= match pat with
   |Some (id1,id2,_)::[] -> (match (find_arc gr id1 id2) with
-      |Some lbl->if lbl<acu then lbl else acu
+      |Some lbl when lbl<acu -> lbl 
       |_->acu)
   |Some (id1,id2,_)::q-> (match (find_arc gr id1 id2) with
       |Some lbl->if lbl<acu then find_min gr (Some q) lbl else find_min gr (Some q) acu
       |_->acu)
   |Some [] -> failwith "La source est le puits"
   |None-> failwith "Pas de chemin"
-
-let ford_fulkerson gr s p = 
-  let ecart = create_ecart gr in 
-  let rec loop ecart= let pat = (find_path ecart s p) in
-    let augment=find_min gr pat max_int in
+(* enlever le Some du path avant de faire find_min
+   let ford_fulkerson gr s p = 
+   let ecart = create_ecart gr in 
+   let rec loop ecart= let pat = (find_path ecart s p) in
+    let augment=find_min gr pat max_int in ()*)
