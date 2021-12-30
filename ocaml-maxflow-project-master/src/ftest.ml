@@ -25,6 +25,8 @@ let () =
   (* Open file *)
   let gr = from_file infile in
 
+  let gr = (gmap gr (int_of_string)) in
+
   let path1= (find_path gr 0 5)in
 
   let rec loop p = (match p with 
@@ -32,16 +34,25 @@ let () =
           |(x,b,c)::rest -> Printf.printf ("%d %d ,") x b; loop (Some rest)
           |[] -> Printf.printf " fin\n"
         )
-      |None -> Printf.printf "rien \n"
-    )
+      |None -> Printf.printf "rien \n");
+
+  in loop path1;
+
+  (match (find_min gr path1 (max_int,0)) with 
+   |(a,b) ->  Printf.printf " flot min %d,%d\n " a b);
 
 
-  (*let graph = (gmap graph (int_of_string)) 
-    in
-    let gr = gmap (create_ecart graph) (string_of_int)
-  *)
+
+
+    (*
+      let graph = (gmap gr (int_of_string)) 
+      in
+      let (gr1, a) = ford_fulkerson graph _source _sink
+      in *)
+  let gr2 = (gmap gr (string_of_int)) 
+
   (* Rewrite the graph that has been read. *)
   in
-  let () =loop path1 ; write_file outfile gr in
-  export gr "./graphs/format.gv";
+  let () = write_file outfile gr2 in
+  export gr2 "./graphs/format.gv";
   ()
