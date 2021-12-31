@@ -27,19 +27,21 @@ let () =
 
   let gr = (gmap gr (int_of_string)) in
 
-  let path1= (find_path gr 0 5)in
+  (*let (res, flot) = ford_fulkerson gr _source _sink*)
 
+  let path1= (find_path gr 0 3) in
   let rec loop p = (match p with 
       |Some a -> (match a with 
-          |(x,b,c)::rest -> Printf.printf ("%d %d ,") x b; loop (Some rest)
+          |(x,b,c)::rest -> Printf.printf ("%d %d flot %d,") x b c; loop (Some rest)
           |[] -> Printf.printf " fin\n"
         )
       |None -> Printf.printf "rien \n");
 
   in loop path1;
-
-  (match (find_min gr path1 (max_int,0)) with 
-   |(a,b) ->  Printf.printf " flot min %d,%d\n " a b);
+  let ec = create_ecart gr in let flot = find_min ec path1 (max_int,0) in 
+  (match flot with 
+   |(a,b) ->  Printf.printf " flot min du graphe d'ecart %d,%d\n " a b);
+  let ec2 = saturer ec flot path1 in 
 
 
 
@@ -49,10 +51,11 @@ let () =
       in
       let (gr1, a) = ford_fulkerson graph _source _sink
       in *)
-  let gr2 = (gmap gr (string_of_int)) 
+  (*let gr2 = (gmap gr (string_of_int)) in *)
 
   (* Rewrite the graph that has been read. *)
-  in
-  let () = write_file outfile gr2 in
-  export gr2 "./graphs/format.gv";
+  let gr = gmap ec2 (string_of_int) in
+  let () = write_file outfile gr; in
+  export gr "./graphs/res.gv";
+  (*Printf.printf "Le flot max est %d" flot;*)
   ()
