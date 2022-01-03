@@ -2,9 +2,7 @@ open Graph
 open Gfile
 open Tools
 open Printf
-
-
-type 'a graph_path = ((id * id * 'a) list) option
+type graph_path = (id list) option
 
 let create_ecart gr=
   let gr2=clone_nodes gr 
@@ -12,64 +10,58 @@ let create_ecart gr=
   e_fold gr (fun gr id1 id2 lbl-> new_arc (new_arc gr id2 id1 0) id1 id2 lbl) gr2
 
 
-let rec process_outarcs gr id lo dest = match lo with
-  |(idx, lbl)::rest -> (if (lbl > 0) (* on ne passe sur un arc que si son lbl est strictement positif *)
-                        then (let res = find_path gr idx dest 
-                              in 
-                              if (res) == None then (process_outarcs gr id rest dest) 
-                              else match res with 
-                                |Some a -> Some ((id,idx,lbl)::a)
-                                |None -> Some [(id,idx,lbl)]
-                             )
-                        else process_outarcs gr id rest dest
-                       )
-  |[]-> None 
-
-and find_path gr id1 id2 = 
-  if id1 == id2 
-  then Some []
+let rec find_path gr src dest acu = 
+  if (src == dest) 
+  then Some (List.rev acu)
   else
-    process_outarcs gr id1 (out_arcs gr id1) id2
+    process_outarcs gr src (out_arcs gr src) dest acu
 
-(* on a pas besoin de la capacite min juste du flot min *)
-let rec find_min gr pat acu= match pat with
-  |Some ((id1,id2,a)::[]) -> (match (find_arc gr id1 id2) with
-      |Some lbl -> (match acu with 
-          |(x,_) -> if (lbl<x) then (lbl, a) else acu)(* ( capacité min ,valeur a ajouter arc d'ajout) *)
-      |_->(-1, -1) (* on y arrive jamais *))
-  |Some ((id1,id2,a)::q)-> (match (find_arc gr id1 id2) with
-      |Some lbl->(match acu with 
-          |(x,_) -> if lbl<x then find_min gr (Some q) (lbl, a) else find_min gr (Some q) acu)
-      |_->(-1, -1) (* on y arrive jamais *))
-  |Some [] -> (0,-1)
-  |None-> (-1, -1)
-
-(* en saurant on doit aussi faire les arcs de retrait *)
-let rec saturer ecart flot_min path = match flot_min with |(_,y) ->
-match path with 
-|Some ((id1,id2,a)::[]) -> (let retrait = (find_arc ecart id2 id1)
-                            in (match retrait with
-                                |Some b -> new_arc (new_arc ecart id1 id2 (a-y)) id2 id1 (b+y)
-                                |_ -> ecart (* on arrive jamais à ce cas *)
-                              ))
-|Some ((id1,id2,a)::q)-> (let retrait = (find_arc ecart id2 id1)
-                          in (match retrait with (*quand on sature on diminue le nombre d'arc qu'on peut ajouter et on augmente le nombre qu'on peut retirer *)
-                              |Some b -> saturer (new_arc (new_arc ecart id1 id2 (a-y)) id2 id1 (b+y)) flot_min (Some q)
-                              |_ -> ecart (* on arrive jamais à ce cas *)
-                            )
-                         )
-|Some [] -> ecart
-|None-> ecart 
+and process_outarcs gr src lo dest acu = match lo with
+  |[] -> None
+  |(id, lbl)::tail -> if (lbl == 0)
+    then process_outarcs gr src tail dest acu
+    else if (List.mem id acu) 
+    then process_outarcs gr src tail dest acu
+    else find_path gr id dest (id::acu)
 
 
-(* enlever le Some du path avant de faire find_min  *)
-let ford_fulkerson gr s p = 
+
+let rec find_min gr path acu = match path with
+  |Some (id1::(id2::t)) -> (let lab = find_arc gr id1 id2 in 
+                            match lab with 
+                            |None -> failwith "Le chemin est incorrect"
+                            |Some v -> if (v < acu)
+                              then find_min gr (Some (id2::t)) v
+                              else find_min gr (Some (id2::t)) acu
+                           )
+  |Some [id] -> acu
+  |None -> -1 (* pas de chemin *)
+  |Some [] -> 0 (* src = dest *)
+
+
+let rec saturer ecart flot_min path = match path with 
+  |None -> failwith "pas de chemin"
+  |Some x -> (match x with 
+      |id1::(id2::t) -> let ajout = find_arc ecart id1 id2 and retrait = find_arc ecart id2 id1 in
+        (match (ajout, retrait) with 
+         |(None, _) -> failwith "chemin incorrect"
+         |(_,None) ->  failwith "chemin incorrect"
+         | (Some a, Some r) -> saturer (new_arc (new_arc ecart id1 id2 (a-flot_min)) id2 id1 (r+flot_min)) flot_min (Some (id2::t))
+        )
+      |[id] -> ecart
+      |[] -> ecart  
+    )
+
+
+
+let ford_fulkerson gr s p= 
   let ec = create_ecart gr in 
   let rec loop ecart= 
-    let pat = (find_path ecart s p) in
-    let augment = find_min gr pat (max_int, 0) in 
-    match augment with
-    |(x,y) ->  if (y == -1) 
-      then (ecart, 100)
-      else loop (saturer ecart augment pat)
+    let pat = (find_path ecart s p [s]) in
+    let augment = find_min ecart pat max_int in 
+    if (augment == 0) 
+    then (ecart, 0)
+    else if (augment == -1)
+    then (ecart, 100)
+    else loop (saturer ecart augment pat)
   in loop ec
