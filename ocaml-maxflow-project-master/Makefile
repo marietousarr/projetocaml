@@ -15,7 +15,7 @@ demo: build
 	@echo "\n==== RESULT ==== (content of outfile) \n"
 	@cat outfile
 	dot -Tsvg graphs/result.gv > graphs/result.svg
-	@echo "\n==== OPEN /graphs/result.svg TO SEE THE FINAL GRAPH =====\n"	
+	@echo "\n==== OPEN graphs/result.svg TO SEE THE FINAL GRAPH =====\n"	
 
 maxflow_of: build
 	@echo "\n==== EXECUTING ====\n"
@@ -23,11 +23,11 @@ maxflow_of: build
 	@echo "\n==== RESULT ==== (content of outfile) \n"
 	@cat outfile
 	dot -Tsvg graphs/result.gv > graphs/result.svg
-	@echo "\n==== OPEN /graphs/result.svg TO SEE THE FINAL GRAPH =====\n"	
+	@echo "\n==== OPEN graphs/result.svg TO SEE THE FINAL GRAPH =====\n"	
 
 
 clean:
 	-rm -rf _build/
 	-rm ftest.native
-	-rm *.svg
-	-rm *.gv
+	-rm graphs/*.svg
+	-rm graphs/*.gv
