@@ -92,7 +92,7 @@ let () =
   in 
 
   (* Rewrite the graph that has been read. *)
-  let gr = gmap ec2 (string_of_int) in
+  let gr = gmap ec2 (flot_to_string) in
   let () = write_file outfile gr; in
   export gr "./graphs/res.gv";
   Printf.printf "Le flot max est %d" flot;

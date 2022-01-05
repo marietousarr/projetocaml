@@ -11,7 +11,7 @@ edit:
 
 demo: build
 	@echo "\n==== EXECUTING ====\n"
-	./ftest.native graphs/graphTest 0 3 outfile
+	./ftest.native graphs/graph2.txt 0 2 outfile
 	@echo "\n==== RESULT ==== (content of outfile) \n"
 	@cat outfile
 
