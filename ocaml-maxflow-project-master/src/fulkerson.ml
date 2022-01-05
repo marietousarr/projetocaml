@@ -2,14 +2,16 @@ open Graph
 open Gfile
 open Tools
 open Printf
+
 type graph_path = (id list) option
+
 type flot_label= {flot:int; capacite:int} 
+
 
 let create_ecart gr=
   let gr2=clone_nodes gr 
   in
   e_fold gr (fun gr id1 id2 lbl-> new_arc (new_arc gr id2 id1 0) id1 id2 lbl) gr2
-  
 
 
 let rec find_path gr src dest acu = 
@@ -18,6 +20,7 @@ let rec find_path gr src dest acu =
   else
     process_outarcs gr src (out_arcs gr src) dest acu
 
+
 and process_outarcs gr src lo dest acu = match lo with
   |[] ->  None
   |(id, lbl)::tail -> if (lbl == 0)
@@ -25,9 +28,8 @@ and process_outarcs gr src lo dest acu = match lo with
     else if (List.mem id acu) 
     then process_outarcs gr src tail dest acu
     else let path= find_path gr id dest (id::acu) in 
-    if (path==None) then process_outarcs gr src tail dest acu 
-    else path
-
+      if (path==None) then process_outarcs gr src tail dest acu 
+      else path
 
 
 let rec find_min gr path acu = match path with
@@ -35,13 +37,13 @@ let rec find_min gr path acu = match path with
                             match lab with 
                             |None -> failwith "Le chemin est incorrect"
                             |Some v -> if (v==0) then find_min gr (Some (id2::t)) acu else 
-                            if (v < acu)
+                              if (v < acu)
                               then find_min gr (Some (id2::t)) v
                               else find_min gr (Some (id2::t)) acu
                            )
   |Some [id] -> acu
-  |None -> 0 (* pas de chemin *)
-  |Some [] -> failwith "impossible" (* src = dest *)
+  |None -> 0 (* pas ou plus de chemin *)
+  |Some [] -> failwith "impossible"
 
 
 let rec saturer ecart flot_min path = match path with 
@@ -57,17 +59,21 @@ let rec saturer ecart flot_min path = match path with
       |[] -> ecart  
     )
 
+
 let ecart_to_flot gr_init gr_ecart=
   let gr_flot=clone_nodes gr_init 
   in
   e_fold gr_init (fun gr id1 id2 lbl-> match (find_arc gr_ecart id2 id1) with
-                                      | (Some a)-> (new_arc gr id1 id2 ({flot = a ; capacite = lbl}))
-                                      |None->failwith "Ce graphe est peu orthodoxe" )   gr_flot
+      | (Some a)-> (new_arc gr id1 id2 ({flot = a ; capacite = lbl}))
+      |None->failwith "Ce graphe est peu orthodoxe" )   gr_flot
+
 
 let flot_to_string flot=match (flot.flot, flot.capacite) with
- |(a, b)->(string_of_int a)^"/"^(string_of_int b)  
+  |(a, b)->(string_of_int a)^"/"^(string_of_int b)  
+
 
 let flot_max gr p= e_fold gr (fun acu id1 id2 lbl-> if id2==p then acu+lbl.flot else acu) 0
+
 
 let ford_fulkerson gr s p= 
   let ec = create_ecart gr in 
@@ -75,8 +81,10 @@ let ford_fulkerson gr s p=
     let pat = (find_path ecart s p [s]) in
     let augment = find_min ecart pat max_int in 
     if (augment == max_int) 
-    then failwith "source=destination" 
+    then failwith "source = sink !" 
     else if (augment == 0)
-    then let gr_flot=ecart_to_flot gr ecart in (gr_flot, flot_max gr_flot p)
+    then let gr_flot=ecart_to_flot gr ecart in 
+      let flot = flot_max gr_flot p 
+      in (if flot == 0 then printf "\nThere is NO path between the source %d and the sink %d !" s p); (gr_flot, flot)
     else loop (saturer ecart augment pat)
   in loop ec

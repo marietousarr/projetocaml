@@ -105,14 +105,29 @@ let export graph path =
   let ff = open_out path in
 
   (* Write in this file. *)
-  (*fprintf ff "%% This is a graph in dot format.\n\n" ;*)
-
   fprintf ff "digraph gr {\n\trankdir = LR; \n\tsize=\"18\"\n\tnode[shape =circle];\n";
 
   (* Write all arcs *)
   e_iter graph (fun id1 id2 lbl -> fprintf ff "\t%d -> %d [label = \"%s\"];\n" id1 id2 lbl) ;
 
-  (*fprintf ff "\n%% End of graph\n" ;*)
+  fprintf ff "}";
+  close_out ff ;
+  ()
+
+let export_ff graph s p path = 
+
+  (* Open a write-file. *)
+  let ff = open_out path in
+
+  (* Write in this file. *)
+
+  fprintf ff "digraph gr {\n\trankdir = LR; \n\tsize=\"18\"\n";
+  fprintf ff "\tnode [shape = doublecircle]; %d %d;\n" s p;
+  fprintf ff "\tnode[shape =circle];\n";
+
+  (* Write all arcs *)
+  e_iter graph (fun id1 id2 lbl -> fprintf ff "\t%d -> %d [label = \"%s\"];\n" id1 id2 lbl) ;
+
   fprintf ff "}";
   close_out ff ;
   ()

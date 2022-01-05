@@ -25,75 +25,17 @@ let () =
   (* Open file *)
   let gr = from_file infile in
 
+  (* Convert the string graph into an int graph *)
   let gr = (gmap gr (int_of_string)) in
 
-  (*let ec = create_ecart gr in
-    let path1= (find_path ec 0 3 [0]) in
+  (* Apply the fold fulkerson algorithm *)
+  let (gr_flot, flot) = ford_fulkerson gr _source _sink in 
 
-    let rec loop p = (match p with 
-      |Some a -> (match a with 
-          |(x)::rest -> Printf.printf ("%d ,") x; loop (Some rest)
-          |[] -> Printf.printf " fin\n"
-        )
-      |None -> Printf.printf "rien \n");
-    in loop path1;
-
-    let flot = find_min ec path1 max_int in 
-    (match flot with 
-    |(a) ->  Printf.printf " flot min du graphe d'ecart %d\n " a);
-    let ec2 = saturer ec flot path1 in 
-
-    let path1= (find_path ec2 0 3 [0]) in
-
-    let rec loop p = (match p with 
-      |Some a -> (match a with 
-          |(x)::rest -> Printf.printf ("%d ,") x; loop (Some rest)
-          |[] -> Printf.printf " fin\n"
-        )
-      |None -> Printf.printf "rien \n");
-    in loop path1;
-
-    let flot = find_min ec2 path1 max_int in 
-    (match flot with 
-    |(a) ->  Printf.printf " flot min du graphe d'ecart %d\n " a);
-    let ec2 = saturer ec2 flot path1 in 
-
-    let path1= (find_path ec2 0 3 [0]) in
-    let rec loop p = (match p with 
-      |Some a -> (match a with 
-          |(x)::rest -> Printf.printf ("%d ,") x; loop (Some rest)
-          |[] -> Printf.printf " fin\n"
-        )
-      |None -> Printf.printf "rien \n");
-    in loop path1;
-
-    let flot = find_min ec2 path1 max_int in 
-    (match flot with 
-    |(a) ->  Printf.printf " flot min du graphe d'ecart %d\n " a);
-    let ec2 = saturer ec2 flot path1 in 
-
-
-    let path1= (find_path ec2 0 3 [0]) in
-    let rec loop p = (match p with 
-      |Some a -> (match a with 
-          |(x)::rest -> Printf.printf ("%d ,") x; loop (Some rest)
-          |[] -> Printf.printf " fin\n"
-        )
-      |None -> Printf.printf "rien \n");
-    in loop path1;
-
-    let flot = find_min ec2 path1 max_int in 
-    (match flot with 
-    |(a) ->  Printf.printf " flot min du graphe d'ecart %d\n " a);
-    let ec2 = saturer ec2 flot path1 in 
-  *)
-
-  let (ec2, flot) = ford_fulkerson gr _source _sink
-  in 
-
-  (* Rewrite the graph that has been read. *)
-  let gr = gmap ec2 (flot_to_string) in
+  (* Write the final flow graph *)
+  let gr = gmap gr_flot (flot_to_string) in
   let () = write_file outfile gr; in
-  export gr "./graphs/res.gv";
-  Printf.printf "Le flot max est %d" flot;
+  (* Export the final flow graph into dot format*)
+  export_ff gr _source _sink "./graphs/result.gv";
+  (* Print the flow max*)
+  Printf.printf "\nThe maximal flow of this graph from Node %d to Node %d is %d !\n" _source _sink flot;
   ()
